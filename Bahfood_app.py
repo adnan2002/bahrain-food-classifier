@@ -3,6 +3,7 @@ import datetime
 import pandas as pd
 import random
 import json
+import time
 from pathlib import Path
 import numpy as np
 import cv2
@@ -87,8 +88,8 @@ def get_model_info(_model):
     return CLASSES
 
 
-def run_yolo(img_bgr, conf=CONF_THRESHOLD):
-    r = DET_MODEL.predict(img_bgr, imgsz=640, conf=conf, verbose=False)[0]
+def run_yolo(img_bgr, conf=CONF_THRESHOLD, imgsz=640):
+    r = DET_MODEL.predict(img_bgr, imgsz=imgsz, conf=conf, verbose=False)[0]
     labels = [DET_MODEL.names[int(c)] for c in r.boxes.cls]
     confs = [float(c) for c in r.boxes.conf]
     return r.plot(), labels, confs
@@ -100,8 +101,8 @@ def classify_crop(bgr):
         return CLASSES[CLF_MODEL(x).argmax(1).item()]
 
 
-def run_two_stage(img_bgr, conf=CONF_THRESHOLD):
-    boxes = DET_MODEL.predict(img_bgr, imgsz=640, conf=conf, verbose=False)[0].boxes
+def run_two_stage(img_bgr, conf=CONF_THRESHOLD, imgsz=640):
+    boxes = DET_MODEL.predict(img_bgr, imgsz=imgsz, conf=conf, verbose=False)[0].boxes
     out = img_bgr.copy()
     labels, confs = [], []
     for b in boxes:
@@ -115,10 +116,10 @@ def run_two_stage(img_bgr, conf=CONF_THRESHOLD):
     return out, labels, confs
 
 
-def process_frame(img_bgr, mode, conf=CONF_THRESHOLD):
+def process_frame(img_bgr, mode, conf=CONF_THRESHOLD, imgsz=640):
     if mode == "two_stage" and CLF_MODEL is not None:
-        return run_two_stage(img_bgr, conf)
-    return run_yolo(img_bgr, conf)
+        return run_two_stage(img_bgr, conf, imgsz)
+    return run_yolo(img_bgr, conf, imgsz)
 
 
 def show_results(annotated_bgr, labels, confs, col):
@@ -141,14 +142,28 @@ def show_results(annotated_bgr, labels, confs, col):
 
 
 class FoodVideoProcessor(VideoProcessorBase):
+    def __init__(self):
+        self._last_process = 0.0
+        self._last_output = None
+
     def recv(self, frame: av.VideoFrame) -> av.VideoFrame:
         img = frame.to_ndarray(format="bgr24")
+
+        now = time.monotonic()
+        interval = STREAM_STATE.get("interval", 0.25)
+        if now - self._last_process < interval and self._last_output is not None:
+            return self._last_output
+
+        self._last_process = now
         mode = STREAM_STATE["mode"]
         conf = STREAM_STATE["conf"]
+        imgsz = STREAM_STATE.get("imgsz", 480)
         if mode == "two_stage" and CLF_MODEL is None:
             mode = "yolo"
-        out, _, _ = process_frame(img, mode, conf)
-        return av.VideoFrame.from_ndarray(out, format="bgr24")
+
+        out, _, _ = process_frame(img, mode, conf, imgsz)
+        self._last_output = av.VideoFrame.from_ndarray(out, format="bgr24")
+        return self._last_output
 
 
 # -----------------------------------------------------
@@ -260,11 +275,17 @@ else:
     st.write("Click **Start** below and allow camera access. "
              "The processed video will stream back in real time.")
 
+    process_hz = st.slider("Processing rate (inference per second)",
+                           min_value=1, max_value=10, value=4)
+    STREAM_STATE["interval"] = 1.0 / process_hz
+    STREAM_STATE["imgsz"] = 480
+
     webrtc_streamer(
         key="food-stream",
         video_processor_factory=FoodVideoProcessor,
         rtc_configuration=RTC_CONFIGURATION,
         media_stream_constraints={"video": True, "audio": False},
+        async_processing=True,
     )
 
     st.caption(f"Detection mode: "
