@@ -227,3 +227,6 @@ Bahrain_Foods-1/*
 food_detection_webcam.avi
 models/big_model.pt
 food_model.pkl
+
+# Local HTTPS certificates (device trust)
+certs/

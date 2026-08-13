@@ -173,4 +173,12 @@ with gr.Blocks(title="🍽️ Bahraini Food Explorer") as demo:
 demo.queue()
 
 if __name__ == "__main__":
-    demo.launch()
+    CERT_DIR = Path("certs")
+    launch_kwargs = {}
+    if CERT_DIR.exists():
+        launch_kwargs["allowed_paths"] = [str(CERT_DIR)]
+    cert = CERT_DIR / "server.crt"
+    key = CERT_DIR / "server.key"
+    if cert.exists() and key.exists():
+        launch_kwargs.update(ssl_certfile=str(cert), ssl_keyfile=str(key))
+    demo.launch(**launch_kwargs)
