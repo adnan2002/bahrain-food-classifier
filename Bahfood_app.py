@@ -17,165 +17,93 @@ st.set_page_config(
 
 # Title
 st.title("🍽️ Bahraini Food Explorer")
+st.write( "Take a photo or upload an image to detect "
+         "Bahraini food."
+)
 
-tab1, tab2 = st.tabs([
-    "📷 Food Detection",
-    "📊 Performance",
-])
+st.divider()
 
-# =========================================================
-# FOOD DETECTION PAGE
-# =========================================================
+ # -----------------------------------------------------
+ # SELECT IMAGE SOURCE
+ # -----------------------------------------------------
 
+st.subheader("Choose Image Source")
 
-with tab1:
-    #st.header("Welcome to Bahraini Food Explorer")
+image_source = st.radio( "Select an option:", [ "📷 Camera",  "📁 Upload Image"],  horizontal=True )
+
+ # =====================================================
+ # CAMERA
+# =====================================================
+
+if image_source == "📷 Camera":
+    st.subheader("📷 Take a Photo")
+
+    camera_image = st.camera_input( "Take a picture of the food" )
     
-    st.header("📷 Bahraini Food Detection")
-
-    st.write(
-        "Take a photo or upload an image to detect "
-        "Bahraini food."
-    )
-
-    st.divider()
-
-    # -----------------------------------------------------
-    # SELECT IMAGE SOURCE
-    # -----------------------------------------------------
-
-    st.subheader("Choose Image Source")
-
-    image_source = st.radio(
-        "Select an option:",
-        [
-            "📷 Camera",
-            "📁 Upload Image"
-        ],
-        horizontal=True
-    )
-
-    # =====================================================
-    # CAMERA
-    # =====================================================
-
-    if image_source == "📷 Camera":
-
-        st.subheader("📷 Take a Photo")
-
-        camera_image = st.camera_input(
-            "Take a picture of the food"
-        )
-
-        if camera_image is not None:
-
-            st.success(
-                "Image captured successfully!"
-            )
-
-            col1, col2 = st.columns(2)
+    if camera_image is not None:
+        st.success("Image captured successfully!")
+        
+        col1, col2 = st.columns(2)
 
             # -------------------------------------------------
             # IMAGE
             # -------------------------------------------------
-
-            with col1:
-
-                st.subheader("📷 Captured Image")
-
-                st.image(
-                    camera_image,
-                    use_container_width=True
-                )
+        with col1:
+            st.subheader("📷 Captured Image")
+            st.image(camera_image, use_container_width=True)
 
             # -------------------------------------------------
             # DETECTION RESULT
             # -------------------------------------------------
 
-            with col2:
+        with col2:
+            st.subheader("🎯 Detection Result")
+            
+            if st.button( "🔍 Detect Food", use_container_width=True):
+                st.info( "YOLO model is not connected yet." )
 
-                st.subheader("🎯 Detection Result")
+            st.write("Food Class: —")
 
-                if st.button(
-                    "🔍 Detect Food",
-                    use_container_width=True
-                ):
+            st.write("Confidence: —")
 
-                    st.info(
-                        "YOLO model is not connected yet."
-                    )
-
-                st.write("Food Class: —")
-
-                st.write("Confidence: —")
-
-                st.write("Objects Detected: —")
+            st.write("Objects Detected: —")
 
 
     # =====================================================
     # UPLOAD IMAGE
     # =====================================================
 
-    else:
-
-        st.subheader("📁 Upload an Image")
-
-        uploaded_image = st.file_uploader(
-            "Choose a food image",
-            type=[
-                "jpg",
-                "jpeg",
-                "png"
-            ]
-        )
-
-        if uploaded_image is not None:
-
-            st.success(
-                "Image uploaded successfully!"
-            )
-
-            col1, col2 = st.columns(2)
-
-            # -------------------------------------------------
-            # IMAGE
-            # -------------------------------------------------
-
-            with col1:
-
-                st.subheader("📷 Uploaded Image")
-
-                st.image(
-                    uploaded_image,
-                    use_container_width=True
-                )
-
-            # -------------------------------------------------
-            # DETECTION
-            # -------------------------------------------------
-
-            with col2:
-
-                st.subheader("🎯 Detection Result")
-
-                if st.button(
-                    "🔍 Detect Food",
-                    use_container_width=True
-                ):
-
-                    st.info(
-                        "YOLO model is not connected yet."
-                    )
-
-                st.write("Food Class: —")
-
-                st.write("Confidence: —")
-
-                st.write("Objects Detected: —")
+else:
+    st.subheader("📁 Upload an Image")
+    uploaded_image = st.file_uploader( "Choose a food image", type=["jpg", "jpeg", "png" ])
+    
+    if uploaded_image is not None:
+        st.success("Image uploaded successfully!")
+        
+        col1, col2 = st.columns(2)
+# -------------------------------------------------
+# IMAGE
+# -------------------------------------------------
+        
+        with col1:
+            st.subheader("📷 Uploaded Image")
+            st.image(uploaded_image, use_container_width=True )
+            
+# -------------------------------------------------
+# DETECTION
+# -------------------------------------------------
+        
+        with col2:
+            st.subheader("🎯 Detection Result")
+            
+            if st.button("🔍 Detect Food", use_container_width=True):
+                st.info("YOLO model is not connected yet." )
+                
+            st.write("Food Class: —")
+            st.write("Confidence: —")
+            st.write("Objects Detected: —")
 
 
 
 
 
-with tab2:
-    st.header("📊 Performance")
