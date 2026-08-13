@@ -218,3 +218,6 @@ __marimo__/
 .streamlit/secrets.toml
 *.pkl
 .pkl
+
+aug_preview.png
+Bahrain_Foods-1/*
