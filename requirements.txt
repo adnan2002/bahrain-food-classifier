@@ -6,3 +6,4 @@ pandas
 streamlit-webrtc
 av
 timm
+gradio

@@ -1,3 +1,14 @@
+---
+title: Bahraini Food Explorer
+emoji: 🍽️
+colorFrom: yellow
+colorTo: green
+sdk: gradio
+sdk_version: "6.24.0"
+app_file: gradio_app.py
+pinned: false
+---
+
 # Gulf Food Classification Project — Checklist
 
 ## 1. Repository Setup
