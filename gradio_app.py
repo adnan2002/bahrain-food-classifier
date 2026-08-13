@@ -180,5 +180,6 @@ if __name__ == "__main__":
     cert = CERT_DIR / "server.crt"
     key = CERT_DIR / "server.key"
     if cert.exists() and key.exists():
-        launch_kwargs.update(ssl_certfile=str(cert), ssl_keyfile=str(key))
+        launch_kwargs.update(ssl_certfile=str(cert), ssl_keyfile=str(key),
+                             ssl_verify=False)
     demo.launch(**launch_kwargs)
