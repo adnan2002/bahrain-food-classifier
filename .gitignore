@@ -222,3 +222,8 @@ __marimo__/
 
 aug_preview.png
 Bahrain_Foods-1/*
+
+# Large local files (not on GitHub)
+food_detection_webcam.avi
+models/big_model.pt
+food_model.pkl
