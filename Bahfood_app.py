@@ -37,9 +37,9 @@ def load_model():
 
 
 @st.cache_resource
-def get_model_info(model):
-    if hasattr(model, "names") and model.names:
-        names = [model.names[i] for i in sorted(model.names)]
+def get_model_info(_model):
+    if hasattr(_model, "names") and _model.names:
+        names = [_model.names[i] for i in sorted(_model.names)]
         return names
     return CLASSES
 
