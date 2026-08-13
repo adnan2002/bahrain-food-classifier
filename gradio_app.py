@@ -17,6 +17,9 @@ DET_MODEL_PATH = Path("models/best.pt")
 CLF_MODEL_PATH = Path("models/big_model.pt")
 CONF_THRESHOLD = 0.25
 
+TWO_STAGE_LABEL = "Two-Stage Detection + Classification (big_model.pt)"
+YOLO_LABEL = "YOLO Detection (best.pt)"
+
 _models = {"det": None, "clf": None, "tf": None}
 
 
@@ -24,21 +27,28 @@ def load_models():
     if _models["det"] is None:
         _models["det"] = YOLO(str(DET_MODEL_PATH))
         if CLF_MODEL_PATH.exists():
-            ckpt = torch.load(str(CLF_MODEL_PATH), map_location="cpu",
-                              weights_only=False)
-            clf = timm.create_model("vit_base_patch16_224", pretrained=False,
-                                    num_classes=len(CLASSES))
-            clf.load_state_dict(ckpt["state_dict"])
-            clf.eval()
-            _models["clf"] = clf
-            _models["tf"] = transforms.Compose([
-                transforms.ToPILImage(),
-                transforms.Resize((224, 224)),
-                transforms.ToTensor(),
-                transforms.Normalize([0.485, 0.456, 0.406],
-                                     [0.229, 0.224, 0.225]),
-            ])
+            try:
+                ckpt = torch.load(str(CLF_MODEL_PATH), map_location="cpu",
+                                  weights_only=False)
+                clf = timm.create_model("vit_base_patch16_224", pretrained=False,
+                                        num_classes=len(CLASSES))
+                clf.load_state_dict(ckpt["state_dict"])
+                clf.eval()
+                _models["clf"] = clf
+                _models["tf"] = transforms.Compose([
+                    transforms.ToPILImage(),
+                    transforms.Resize((224, 224)),
+                    transforms.ToTensor(),
+                    transforms.Normalize([0.485, 0.456, 0.406],
+                                         [0.229, 0.224, 0.225]),
+                ])
+                print(f"two-stage classifier loaded: {CLF_MODEL_PATH.name}")
+            except Exception as e:
+                print(f"WARNING: failed to load classifier: {e}")
     return _models
+
+
+load_models()
 
 
 def classify_crop(bgr):
@@ -83,7 +93,7 @@ def process_frame(rgb, two_stage, imgsz=640):
 def detect(rgb, mode):
     if rgb is None:
         return None, {}, pd.DataFrame()
-    annotated, labels, confs = process_frame(rgb, mode == "two_stage")
+    annotated, labels, confs = process_frame(rgb, mode == TWO_STAGE_LABEL)
     if not labels:
         return annotated, {"None": 0.0}, pd.DataFrame()
     best_idx = int(np.argmax(confs))
@@ -97,12 +107,8 @@ def detect(rgb, mode):
 def stream_frame(rgb, mode):
     if rgb is None:
         return None
-    annotated, _, _ = process_frame(rgb, mode == "two_stage", imgsz=480)
+    annotated, _, _ = process_frame(rgb, mode == TWO_STAGE_LABEL, imgsz=480)
     return annotated
-
-
-TWO_STAGE_LABEL = "Two-Stage Detection + Classification (big_model.pt)"
-YOLO_LABEL = "YOLO Detection (best.pt)"
 
 with gr.Blocks(title="🍽️ Bahraini Food Explorer") as demo:
     gr.Markdown("# 🍽️ Bahraini Food Explorer\n"
@@ -115,9 +121,9 @@ with gr.Blocks(title="🍽️ Bahraini Food Explorer") as demo:
         value=YOLO_LABEL,
     )
 
-    if not CLF_MODEL_PATH.exists():
-        gr.Warning("⚠️ models/big_model.pt is not available. Two-Stage mode "
-                   "will fall back to YOLO detection.")
+    if _models["clf"] is None:
+        gr.Warning("⚠️ Two-Stage classifier (models/big_model.pt) is not "
+                   "loaded. Two-Stage mode will fall back to YOLO detection.")
 
     with gr.Tab("📁 Photo / Upload"):
         with gr.Row():
