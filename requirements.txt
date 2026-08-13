@@ -3,3 +3,6 @@ ultralytics
 pillow
 numpy
 pandas
+streamlit-webrtc
+av
+timm
