@@ -9,48 +9,66 @@ app_file: gradio_app.py
 pinned: false
 ---
 
-# Gulf Food Classification Project — Checklist
+# Bahraini Food Explorer
 
-## 1. Repository Setup
-- [ ] Create GitHub repo — **Adnan**
+Detect and classify traditional Bahraini dishes in photos and live video with a
+two-stage YOLO + Vision Transformer pipeline.
 
-## 2. Data Collection (scraping)
-**Sources:** Talabat, Instagram, Facebook, TikTok, online menus
+[![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1UKzkRAD-gbk1ZHPQIh5-sA63TEj_qK3N?usp=sharing)
+[![Streamlit App](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://bahrain-food-classifier.streamlit.app/)
 
-Assigned by food item:
-- [ ] **Alya** — Gaimat, Samboosa, Halwa
-- [ ] **Adnan** — Eggs + Tomato, Liver, Fish
-- [ ] **Fajer** — Balaleet, Karak, Tikka
-- [ ] **Ahmed** — Ma'karona Hamra (Ma3krona), Harees, Nakhi (Nakhaj)
+## Try It
 
-## 3. Data Cleaning / Organizing
-- [ ] *(Not specified in notes — add tasks here, e.g. removing duplicates, filtering low-quality images, standardizing file naming)*
+| Link | Description |
+|---|---|
+| [Streamlit App](https://bahrain-food-classifier.streamlit.app/) | Upload, camera, and live-streaming demo |
+| [Colab Notebook](https://colab.research.google.com/drive/1UKzkRAD-gbk1ZHPQIh5-sA63TEj_qK3N?usp=sharing) | Interactive training and detection notebook |
+| Gradio (this repo) | Also deployed as a Hugging Face Space — run `gradio_app.py` |
 
-## 4. Data Labeling
-- [ ] Label images (AI-assisted)
-- [ ] Spot-check / verify AI-assigned labels for accuracy
+## How It Works
 
-## 5. Data Augmentation
-- [ ] Apply augmentation techniques (rotation, cropping, brightness/contrast, flips, etc.) to expand dataset size and variety
+1. **YOLO** (`models/best.pt`) locates food objects and draws boxes.
+2. **ViT classifier** (`models/big_model.pt`, ViT-B/16 fine-tuned with a linear
+   probe) identifies the dish inside each detection.
+3. Two modes: YOLO-only detection, or two-stage detection + classification.
 
-## 6. Food Categories (Classes)
-- [ ] Gaimat
-- [ ] Samboosa
-- [ ] Eggs + Tomato
-- [ ] Liver
-- [ ] Balaleet
-- [ ] Harees
-- [ ] Fish
-- [ ] Halwa
-- [ ] Karak
-- [ ] Ma3krona (Ma'karona Hamra)
-- [ ] Nakhaj (Nakhi)
-- [ ] Tikka
+## Classes
 
-## 7. Model Selection
-- [ ] Research candidate models (more than one)
-- [ ] Compare performance/accuracy across models
-- [ ] Choose the best-performing model for the final classifier
+balaleet · egg_tomato · fish · gaimat · halwa · karak · liver · ma3krona ·
+nakhaj · samboosa · tikka
 
----
-*Note: Item 3 was left unspecified in the original notes — fill in once the team decides on the cleaning/organizing step.*
+## Sample Photos
+
+| | | | |
+|---|---|---|---|
+| balaleet<br><img src="data/balaleet/Balaleet_4.jpeg" width="150"> | egg_tomato<br><img src="data/eggs_tomato/IMG_5944.jpeg" width="150"> | fish<br><img src="data/fish/IMG_6011.jpeg" width="150"> | gaimat<br><img src="data/gaimat/images%20(15).jpg" width="150"> |
+| halwa<br><img src="data/halwa/images%20(25).jpg" width="150"> | karak<br><img src="data/karak/Karak_14.jpeg" width="150"> | liver<br><img src="data/liver/hqdefault.jpg" width="150"> | ma3krona<br><img src="data/ma3krona/makarona5.jpg" width="150"> |
+| nakhaj<br><img src="data/nakhaj/Nakhaj19.jpg" width="150"> | samboosa<br><img src="data/samboosa/images%20(3).jpg" width="150"> | tikka<br><img src="data/tikka/Tikka_30.jpeg" width="150"> | |
+
+## Run Locally
+
+```bash
+pip install -r requirements.txt
+```
+
+```bash
+# Streamlit app (camera, upload, live streaming)
+streamlit run Bahfood_app.py
+
+# Gradio app (Hugging Face Space)
+python gradio_app.py
+```
+
+Place `models/best.pt` (YOLO) and optionally `models/big_model.pt` (ViT
+classifier) in `models/`. The dataset lives in `data/<class>/`.
+
+## Training
+
+`train_big_model.py` fine-tunes the classifier: it loads a ViT-B/16 backbone,
+replaces the head with an 11-class linear layer, trains a linear probe, then
+optionally unfreezes the last blocks. See
+[MODEL_REPORT.md](MODEL_REPORT.md) for the full model investigation.
+
+## License
+
+[MIT](LICENSE)
