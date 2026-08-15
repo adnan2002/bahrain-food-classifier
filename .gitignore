@@ -223,6 +223,9 @@ __marimo__/
 aug_preview.png
 Bahrain_Foods-1/*
 
+# Streamlit Cloud logs
+logs-*.txt
+
 # Large local files (not on GitHub)
 food_detection_webcam.avi
 food_two_stage.avi
