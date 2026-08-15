@@ -23,7 +23,6 @@ two-stage YOLO + Vision Transformer pipeline.
 |---|---|
 | [Streamlit App](https://bahrain-food-classifier.streamlit.app/) | Upload, camera, and live-streaming demo |
 | [Colab Notebook](https://colab.research.google.com/drive/1UKzkRAD-gbk1ZHPQIh5-sA63TEj_qK3N?usp=sharing) | Interactive training and detection notebook |
-| Gradio (this repo) | Also deployed as a Hugging Face Space — run `gradio_app.py` |
 
 ## How It Works
 
